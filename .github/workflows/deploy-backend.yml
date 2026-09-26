@@ -1,0 +1,39 @@
+name: Deploy Firebase Backend
+
+# Runs every time you push a change inside backend/ to "main". This is
+# what replaces typing `firebase deploy` on a computer — GitHub's
+# server logs into your Firebase project (using the secret key you add
+# in repo Settings -> Secrets, see backend/README-deploy.md) and runs
+# the deploy for you.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install function dependencies
+        working-directory: backend/functions
+        run: npm install
+
+      - name: Write service account key
+        working-directory: backend
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
+
+      - name: Deploy functions and Firestore rules
+        working-directory: backend
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: service-account.json
+        run: |
+          npx firebase-tools deploy --only functions,firestore:rules --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
+          
