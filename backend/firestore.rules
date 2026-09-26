@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can READ only their own profile (coins, streaks, etc).
+    // They can NEVER write to it directly — every coin change must
+    // go through a Cloud Function (which uses the admin SDK and
+    // bypasses these rules). This is the single most important rule
+    // in the whole app: without it, anyone could set their own coins
+    // to 999999 by calling Firestore directly.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+
+      // Account History rows — written only by Cloud Functions, each
+      // user can read only their own.
+      match /transactions/{txId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+    }
+
+    // Challenge docs (CAPTCHA / math quiz answers) are written only
+    // by Cloud Functions and never readable by clients — otherwise
+    // the correct answer would be sitting right there in Firestore.
+    match /challenges/{id} {
+      allow read, write: if false;
+    }
+
+    match /videoSessions/{id} {
+      allow read, write: if false;
+    }
+
+    // Redemption requests: user can create their own request (the
+    // Cloud Function still re-validates the coin balance before
+    // deducting anything) and read their own past requests, but can't
+    // edit or delete once submitted.
+    match /redemptions/{id} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
