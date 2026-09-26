@@ -1,0 +1,38 @@
+name: Build Android APK
+
+# Runs automatically every time you push code to the "main" branch on
+# GitHub, and can also be run manually from the "Actions" tab. Builds
+# happen on GitHub's own computers — nothing runs on your phone.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+        # Using --debug on purpose: it needs no signing keys, so there
+        # is nothing extra to configure. Good enough for installing on
+        # your own phone to test. Switch to `--release` later once you
+        # set up a signing key (needed only for publishing to the Play
+        # Store).
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-rewards-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          
