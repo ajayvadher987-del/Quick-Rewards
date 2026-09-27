@@ -22,6 +22,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate missing Android platform files
+        run: flutter create --platforms=android --org com.example --project-name quick_rewards .
+        # Our repo only has lib/, pubspec.yaml, assets/ etc — no native
+        # "android/" folder (that's a lot of generated files, some of
+        # them binary, which can't be hand-copied through GitHub's web
+        # editor). This step asks the Flutter SDK on GitHub's own
+        # computer to generate that missing folder automatically,
+        # right before building. It never touches our existing lib/
+        # or pubspec.yaml — it only fills in what's missing.
+
       - name: Build debug APK
         run: flutter build apk --debug
         # Using --debug on purpose: it needs no signing keys, so there
@@ -35,4 +45,3 @@ jobs:
         with:
           name: quick-rewards-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
-          
