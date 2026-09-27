@@ -97,6 +97,16 @@ class _SignInScreenState extends State<_SignInScreen> {
                     label: Text(_busy ? 'Signing in…' : 'Continue with Google'),
                   ),
                 ),
+                const SizedBox(height: 14),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MainShell()),
+                  ),
+                  child: const Text(
+                    'Preview without signing in (testing only)',
+                    style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline),
+                  ),
+                ),
               ],
             ),
           ),
