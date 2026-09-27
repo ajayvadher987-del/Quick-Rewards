@@ -1,8 +1,5 @@
 name: Build Android APK
 
-# Runs automatically every time you push code to the "main" branch on
-# GitHub, and can also be run manually from the "Actions" tab. Builds
-# happen on GitHub's own computers — nothing runs on your phone.
 on:
   push:
     branches: [main]
@@ -11,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,13 +22,13 @@ jobs:
 
       - name: Generate missing Android platform files
         run: flutter create --platforms=android --org com.example --project-name quick_rewards .
-        # Our repo only has lib/, pubspec.yaml, assets/ etc — no native
-        # "android/" folder (that's a lot of generated files, some of
-        # them binary, which can't be hand-copied through GitHub's web
-        # editor). This step asks the Flutter SDK on GitHub's own
-        # computer to generate that missing folder automatically,
-        # right before building. It never touches our existing lib/
-        # or pubspec.yaml — it only fills in what's missing.
+        
+      - name: Fix Kotlin version
+        run: |
+          if [ -f android/settings.gradle ]; then
+            sed -i "s/id 'org.jetbrains.kotlin.android' version '[^']*'/id 'org.jetbrains.kotlin.android' version '1.9.24'/" android/settings.gradle
+            sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.24"/' android/settings.gradle
+          fi
 
       - name: Set minimum Android SDK version (Firebase needs 23+)
         run: |
@@ -40,18 +38,9 @@ jobs:
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/flutter.minSdkVersion/23/' android/app/build.gradle.kts
           fi
-        # The freshly generated Android project defaults to minSdk 21,
-        # but the Firebase libraries we use require 23+. This edits
-        # the just-generated file (not something you need to touch by
-        # hand) before Gradle compiles it.
 
       - name: Build debug APK
         run: flutter build apk --debug
-        # Using --debug on purpose: it needs no signing keys, so there
-        # is nothing extra to configure. Good enough for installing on
-        # your own phone to test. Switch to `--release` later once you
-        # set up a signing key (needed only for publishing to the Play
-        # Store).
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
