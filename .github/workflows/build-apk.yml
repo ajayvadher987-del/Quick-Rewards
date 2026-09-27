@@ -32,6 +32,15 @@ jobs:
         # right before building. It never touches our existing lib/
         # or pubspec.yaml — it only fills in what's missing.
 
+      - name: Set minimum Android SDK version (Firebase needs 23+)
+        run: |
+          [ -f android/app/build.gradle ] && sed -i 's/flutter.minSdkVersion/23/' android/app/build.gradle
+          [ -f android/app/build.gradle.kts ] && sed -i 's/flutter.minSdkVersion/23/' android/app/build.gradle.kts
+        # The freshly generated Android project defaults to minSdk 21,
+        # but the Firebase libraries we use require 23+. This edits
+        # the just-generated file (not something you need to touch by
+        # hand) before Gradle compiles it.
+
       - name: Build debug APK
         run: flutter build apk --debug
         # Using --debug on purpose: it needs no signing keys, so there
