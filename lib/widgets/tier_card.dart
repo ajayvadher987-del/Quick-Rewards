@@ -36,7 +36,7 @@ class TierCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(10, 16, 10, 16),
+            padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: AppColors.line),
