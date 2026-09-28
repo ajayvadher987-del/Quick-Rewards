@@ -209,7 +209,7 @@ class _TierGrid extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: 0.78,
+            childAspectRatio: 0.68,
           ),
           itemBuilder: (context, i) {
             final tier = tiers[i];
