@@ -4,6 +4,8 @@ import '../../services/user_repository.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/reward_card.dart';
+import '../earn/captcha_screen.dart';
+import '../earn/math_quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -73,7 +75,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.shield_rounded,
                       themeKey: 'blue',
                       progress: user.captchaToday / 30,
-                      onTap: () {}, // TODO: push CaptchaScreen
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CaptchaScreen()),
+                      ), // push CaptchaScreen
                     ),
                     const SizedBox(height: 14),
                     RewardCard(
@@ -82,7 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.calculate_rounded,
                       themeKey: 'rose',
                       progress: user.mathToday / 30,
-                      onTap: () {}, // TODO: push MathQuizScreen
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const MathQuizScreen()),
+                      ), // push MathQuizScreen
                     ),
                     const SizedBox(height: 14),
                     RewardCard(
