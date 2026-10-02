@@ -35,5 +35,5 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: service-account.json
         run: |
-          npx firebase-tools deploy --only functions,firestore:rules --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
+          npx firebase-tools deploy --only functions,firestore:rules,storage --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
           
