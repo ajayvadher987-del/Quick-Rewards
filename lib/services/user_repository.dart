@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/user_model.dart';
 import '../models/transaction_entry.dart';
 
@@ -33,10 +35,16 @@ class UserRepository {
   }
 
   Future<CoinResult> claimDailyLogin() => _call('claimDailyLogin');
+  Future<void> ensureUserDoc() => _call('ensureUserDoc');
+
+  Future<Map<String, dynamic>> generateCaptchaChallenge() => _callRaw('generateCaptchaChallenge');
+  Future<Map<String, dynamic>> generateMathChallenge() => _callRaw('generateMathChallenge');
   Future<CoinResult> submitCaptcha(String answer, String challengeId) =>
       _call('submitCaptcha', {'answer': answer, 'challengeId': challengeId});
   Future<CoinResult> submitMathQuiz(int answer, String challengeId) =>
       _call('submitMathQuiz', {'answer': answer, 'challengeId': challengeId});
+  Future<CoinResult> claimCaptchaMission() => _call('claimCaptchaMission');
+  Future<CoinResult> useScratchCard() => _call('useScratchCard');
   Future<CoinResult> claimVideoWatch(String sessionId) =>
       _call('claimVideoWatch', {'sessionId': sessionId});
   Future<CoinResult> spinWheel() => _call('spinWheel');
@@ -102,6 +110,33 @@ class UserRepository {
       );
     } on FirebaseFunctionsException catch (e) {
       return CoinResult(success: false, coinsAwarded: 0, message: e.message ?? 'Something went wrong');
+    }
+  }
+
+  /// For callables that return a puzzle/question shape rather than
+  /// the usual {success, coinsAwarded, message} — e.g. the CAPTCHA and
+  /// Math Quiz challenge generators.
+  Future<Map<String, dynamic>> _callRaw(String name, [Map<String, dynamic>? data]) async {
+    final result = await _functions.httpsCallable(name).call(data);
+    return Map<String, dynamic>.from(result.data as Map);
+  }
+
+  /// Uploads a social-task proof screenshot to Firebase Storage under
+  /// this user's own folder, then tells the backend it's ready for
+  /// review. Coins are NOT awarded here — see submitTaskProof in
+  /// backend/functions/index.js.
+  Future<CoinResult> submitTaskProof(String task, File screenshot) async {
+    final id = uid;
+    if (id == null) {
+      return const CoinResult(success: false, coinsAwarded: 0, message: 'Sign in first.');
+    }
+    try {
+      final path = 'submissions/$id/${task}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ref = FirebaseStorage.instance.ref(path);
+      await ref.putFile(screenshot);
+      return _call('submitTaskProof', {'task': task, 'storagePath': path});
+    } catch (e) {
+      return CoinResult(success: false, coinsAwarded: 0, message: 'Upload failed: $e');
     }
   }
 }
