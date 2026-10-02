@@ -42,6 +42,16 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Social task (WhatsApp/Telegram/YouTube) screenshot submissions.
+    // Created only by the submitTaskProof Cloud Function (admin SDK,
+    // bypasses these rules) — the user can read their own submission
+    // to see its status, but never edit it (that would let someone
+    // mark their own submission "approved").
+    match /submissions/{id} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
     // Deny everything else by default.
     match /{document=**} {
       allow read, write: if false;
