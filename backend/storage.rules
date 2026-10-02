@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Each user can upload/read only their own screenshots, under
+    // their own uid folder. Cloud Functions (admin SDK) and you
+    // reviewing in the Firebase Console bypass these rules entirely,
+    // so you can always see every submitted screenshot to review it.
+    match /submissions/{uid}/{fileName} {
+      allow read, write: if request.auth != null && request.auth.uid == uid
+                          && request.resource.size < 5 * 1024 * 1024
+                          && request.resource.contentType.matches('image/.*');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
