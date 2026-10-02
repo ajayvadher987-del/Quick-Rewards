@@ -20,6 +20,10 @@ class UserModel {
   final int scratchCards;
   final String referralCode;
   final bool referralApplied;
+  final bool captchaMissionClaimed;
+  final String? socialWhatsapp; // null | 'pending' | 'approved'
+  final String? socialTelegram;
+  final String? socialYoutube;
 
   const UserModel({
     required this.uid,
@@ -37,6 +41,10 @@ class UserModel {
     required this.scratchCards,
     required this.referralCode,
     required this.referralApplied,
+    required this.captchaMissionClaimed,
+    required this.socialWhatsapp,
+    required this.socialTelegram,
+    required this.socialYoutube,
   });
 
   factory UserModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -58,6 +66,10 @@ class UserModel {
       scratchCards: d['scratchCards'] ?? 0,
       referralCode: d['referralCode'] ?? '',
       referralApplied: d['referralApplied'] ?? false,
+      captchaMissionClaimed: d['captchaMissionClaimed'] ?? false,
+      socialWhatsapp: d['social_whatsapp'],
+      socialTelegram: d['social_telegram'],
+      socialYoutube: d['social_youtube'],
     );
   }
 
@@ -78,6 +90,10 @@ class UserModel {
         scratchCards: 0,
         referralCode: '',
         referralApplied: false,
+        captchaMissionClaimed: false,
+        socialWhatsapp: null,
+        socialTelegram: null,
+        socialYoutube: null,
       );
 
   bool get hasClaimedLoginToday {
